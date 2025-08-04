@@ -13,7 +13,7 @@ output "id" {
 
 output "private_endpoints" {
   description = "A map of created Private Endpoint details, including their resource IDs and FQDNs."
-  value       = { for k, v in azurerm_private_endpoint.this : k => {
+  value = { for k, v in azurerm_private_endpoint.this : k => {
     id   = v.id
     fqdn = try(v.private_service_connection[0].private_ip_address, null)
   } }

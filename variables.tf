@@ -109,10 +109,10 @@ variable "role_assignments" {
 
 variable "private_endpoints" {
   type = map(object({
-    subnet_id                  = string
+    subnet_id                   = string
     private_dns_zone_group_name = optional(string, "default")
-    private_dns_zone_ids       = optional(list(string), [])
-    subresource_names          = list(string)
+    private_dns_zone_ids        = optional(list(string), [])
+    subresource_names           = list(string)
   }))
   description = "A map of Private Endpoints to create for the Virtual Desktop Workspace. The key is a descriptive name for the endpoint."
   default     = {}
@@ -145,20 +145,43 @@ variable "private_endpoints" {
 # Diagnostic Settings Variables
 #------------------------------------------------------------------------------
 
+variable "diagnostics_level" {
+  description = "Defines the desired diagnostic intent. 'all' and 'audit' are dynamically mapped to available categories. Possible values: 'none', 'all', 'audit', 'custom'."
+  type        = string
+  default     = "none"
+  validation {
+    condition     = contains(["none", "all", "audit", "custom"], var.diagnostics_level)
+    error_message = "Valid values for diagnostics_level are 'none', 'all', 'audit', or 'custom'."
+  }
+}
+
 variable "diagnostic_settings" {
+  description = "A map containing the destination IDs for diagnostic settings. When diagnostics are enabled, exactly one destination must be specified."
   type = object({
-    enabled                      = optional(bool, false)
-    log_analytics_workspace_id   = optional(string)
+    log_analytics_workspace_id     = optional(string)
     eventhub_authorization_rule_id = optional(string)
-    storage_account_id           = optional(string)
-    log_categories               = optional(list(string), [])
-    metric_categories            = optional(list(string), ["AllMetrics"])
+    storage_account_id             = optional(string)
   })
-  description = "A configuration object for diagnostic settings on the Virtual Desktop Workspace."
-  default     = {}
+  default = {}
 
   validation {
-    condition     = !var.diagnostic_settings.enabled || (var.diagnostic_settings.log_analytics_workspace_id != null || var.diagnostic_settings.eventhub_authorization_rule_id != null || var.diagnostic_settings.storage_account_id != null)
-    error_message = "When diagnostic_settings are enabled, at least one destination (Log Analytics, Event Hub, or Storage Account) must be specified."
+    condition = var.diagnostics_level == "none" || (
+      (try(var.diagnostic_settings.log_analytics_workspace_id, null) != null ? 1 : 0) +
+      (try(var.diagnostic_settings.eventhub_authorization_rule_id, null) != null ? 1 : 0) +
+      (try(var.diagnostic_settings.storage_account_id, null) != null ? 1 : 0) == 1
+    )
+    error_message = "When 'diagnostics_level' is not 'none', exactly one of 'log_analytics_workspace_id', 'eventhub_authorization_rule_id', or 'storage_account_id' must be specified in the 'diagnostic_settings' object."
   }
+}
+
+variable "diagnostics_custom_logs" {
+  description = "A list of specific log categories to enable when diagnostics_level is 'custom'."
+  type        = list(string)
+  default     = []
+}
+
+variable "diagnostics_custom_metrics" {
+  description = "A list of specific metric categories to enable. Use ['AllMetrics'] for all."
+  type        = list(string)
+  default     = ["AllMetrics"]
 }

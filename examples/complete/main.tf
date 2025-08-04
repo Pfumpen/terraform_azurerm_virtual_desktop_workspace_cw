@@ -51,10 +51,10 @@ resource "azurerm_virtual_network" "this" {
 }
 
 resource "azurerm_subnet" "this" {
-  name                 = "snet-pep"
-  resource_group_name  = azurerm_resource_group.this.name
-  virtual_network_name = azurerm_virtual_network.this.name
-  address_prefixes     = ["10.1.1.0/24"]
+  name                              = "snet-pep"
+  resource_group_name               = azurerm_resource_group.this.name
+  virtual_network_name              = azurerm_virtual_network.this.name
+  address_prefixes                  = ["10.1.1.0/24"]
   private_endpoint_network_policies = "Disabled"
 }
 
@@ -70,11 +70,11 @@ resource "azurerm_private_dns_zone" "this" {
 module "virtual_desktop_workspace" {
   source = "../.."
 
-  name                = "avd-ws-complete-example"
-  resource_group_name = azurerm_resource_group.this.name
-  location            = azurerm_resource_group.this.location
-  friendly_name       = "Complete Workspace"
-  description         = "A complete AVD workspace example."
+  name                          = "avd-ws-complete-example"
+  resource_group_name           = azurerm_resource_group.this.name
+  location                      = azurerm_resource_group.this.location
+  friendly_name                 = "Complete Workspace"
+  description                   = "A complete AVD workspace example."
   public_network_access_enabled = false
 
   application_group_associations = {
@@ -96,10 +96,9 @@ module "virtual_desktop_workspace" {
     }
   }
 
+  diagnostics_level = "all"
   diagnostic_settings = {
-    enabled                      = true
-    log_analytics_workspace_id   = azurerm_log_analytics_workspace.this.id
-    log_categories               = ["Checkpoint", "Error", "Management"]
+    log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
   }
 
   tags = {

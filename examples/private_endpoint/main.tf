@@ -16,10 +16,10 @@ resource "azurerm_virtual_network" "this" {
 }
 
 resource "azurerm_subnet" "this" {
-  name                 = "snet-default"
-  resource_group_name  = azurerm_resource_group.this.name
-  virtual_network_name = azurerm_virtual_network.this.name
-  address_prefixes     = ["10.0.1.0/24"]
+  name                              = "snet-default"
+  resource_group_name               = azurerm_resource_group.this.name
+  virtual_network_name              = azurerm_virtual_network.this.name
+  address_prefixes                  = ["10.0.1.0/24"]
   private_endpoint_network_policies = "Disabled"
 }
 
@@ -31,10 +31,10 @@ resource "azurerm_private_dns_zone" "this" {
 module "virtual_desktop_workspace" {
   source = "../.."
 
-  name                = "avd-ws-pe-example"
-  resource_group_name = azurerm_resource_group.this.name
-  location            = azurerm_resource_group.this.location
-  friendly_name       = "Private Endpoint Workspace"
+  name                          = "avd-ws-pe-example"
+  resource_group_name           = azurerm_resource_group.this.name
+  location                      = azurerm_resource_group.this.location
+  friendly_name                 = "Private Endpoint Workspace"
   public_network_access_enabled = false
 
   private_endpoints = {
