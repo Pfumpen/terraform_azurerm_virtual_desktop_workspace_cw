@@ -25,12 +25,4 @@ resource "azurerm_virtual_desktop_workspace" "this" {
   public_network_access_enabled = var.public_network_access_enabled
   tags                          = local.tags
 
-  lifecycle {
-    # Precondition to ensure that if public network access is disabled,
-    # at least one private endpoint is defined to maintain connectivity.
-    precondition {
-      condition     = var.public_network_access_enabled || length(var.private_endpoints) > 0
-      error_message = "Disabling public network access requires at least one private endpoint to be configured."
-    }
-  }
 }

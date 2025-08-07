@@ -139,6 +139,11 @@ variable "private_endpoints" {
     ])
     error_message = "The 'subresource_names' list for each private endpoint cannot be empty."
   }
+
+  validation {
+    condition     = var.public_network_access_enabled || length(var.private_endpoints) > 0
+    error_message = "When public_network_access_enabled is false, at least one private endpoint must be configured."
+  }
 }
 
 #------------------------------------------------------------------------------
