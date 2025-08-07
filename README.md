@@ -50,7 +50,8 @@ This Terraform module provides a standardized and flexible way to deploy an Azur
 | `tags` | A map of tags to assign to all created resources. These tags will be merged with the module's default tags. | `map(string)` | `{}` | no |
 | `application_group_associations` | A map where the key is a logical name and the value is the Resource ID of a Virtual Desktop Application Group to associate with the workspace. | `map(string)` | `{}` | no |
 | `role_assignments` | A map of role assignments to create on the Virtual Desktop Workspace scope. See structure below. | `map(object)` | `{}` | no |
-| `private_endpoints` | A map of Private Endpoints to create for the Virtual Desktop Workspace. See structure below. | `map(object)` | `{}` | no |
+| `private_endpoint_config` | If configured, creates the required private endpoints for the workspace. See structure below. | `object` | `null` | no |
+| `create_global_endpoint` | If true and `private_endpoint_config` is set, a private endpoint for the 'global' sub-resource will also be created. | `bool` | `true` | no |
 | `diagnostics_level` | Defines the desired diagnostic intent. Possible values: 'none', 'all', 'audit', 'custom'. | `string` | `"none"` | no |
 | `diagnostic_settings` | A map containing the destination IDs for diagnostic settings. See structure below. | `object` | `{}` | no |
 | `diagnostics_custom_logs` | A list of specific log categories to enable when diagnostics_level is 'custom'. | `list(string)` | `[]` | no |
@@ -77,29 +78,33 @@ role_assignments = {
 }
 ```
 
-### `private_endpoints` variable structure
+### `private_endpoint_config` variable structure
 
-A map of objects to define Private Endpoints for the workspace.
+An object to define a common configuration for the workspace's Private Endpoints.
 
-- `subnet_id` (string, required): The resource ID of the subnet to deploy the private endpoint into.
-- `subresource_names` (list(string), required): A list of sub-resources to connect to. For a workspace, this must be `["workspace"]`.
-- `private_dns_zone_group_name` (string, optional): The name of the Private DNS Zone Group to create. Defaults to `default`.
-- `private_dns_zone_ids` (list(string), optional): A list of Private DNS Zone resource IDs to associate with the endpoint.
+- `subnet_id` (string, required): The resource ID of the subnet where the private endpoints will be created.
+- `private_dns_zone_ids` (list(string), required): A list of Private DNS Zone resource IDs to associate with the endpoints.
+- `private_dns_zone_group_name` (string, optional): The name for the Private DNS Zone Group. Defaults to `default`.
 
-Type: `map(object({ subnet_id = string, private_dns_zone_group_name = optional(string, "default"), private_dns_zone_ids = optional(list(string), []), subresource_names = list(string) }))`
+Type: `object({ subnet_id = string, private_dns_zone_ids = list(string), private_dns_zone_group_name = optional(string, "default") })`
 
 Example:
 ```hcl
-private_endpoints = {
-  "main-endpoint" = {
-    subnet_id         = "/subscriptions/sub-id/resourceGroups/rg-net/providers/Microsoft.Network/virtualNetworks/vnet-core/subnets/private-endpoints"
-    subresource_names = ["workspace"]
-    private_dns_zone_ids = [
-      "/subscriptions/sub-id/resourceGroups/rg-dns/providers/Microsoft.Network/privateDnsZones/privatelink.wvd.microsoft.com"
-    ]
-  }
+private_endpoint_config = {
+  subnet_id            = "/subscriptions/sub-id/resourceGroups/rg-net/providers/Microsoft.Network/virtualNetworks/vnet-core/subnets/private-endpoints"
+  private_dns_zone_ids = ["/subscriptions/sub-id/resourceGroups/rg-dns/providers/Microsoft.Network/privateDnsZones/privatelink.wvd.microsoft.com"]
 }
 ```
+
+### Private Endpoint Strategy
+
+The Azure Virtual Desktop service uses two distinct sub-resources for its private link connections:
+- **feed**: This endpoint is required for each individual workspace and handles the user's connection feed.
+- **global**: This is a global endpoint that serves all workspaces within a single Azure AD tenant. You only need **one** `global` endpoint for your entire AVD environment.
+
+This module is designed to handle both standalone and multi-workspace deployments intelligently:
+- **Default Behavior (Standalone)**: By default (`create_global_endpoint = true`), the module creates Private Endpoints for both the `feed` and `global` sub-resources. This is ideal for the first or only workspace in your environment.
+- **Secondary Workspaces**: When deploying additional workspaces into an environment that already has a `global` endpoint, you must set `create_global_endpoint = false`. This ensures the module only creates the necessary `feed` endpoint for the new workspace, preventing conflicts.
 
 ### `diagnostic_settings` variable structure
 

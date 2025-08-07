@@ -107,43 +107,24 @@ variable "role_assignments" {
 # Private Endpoint Variables
 #------------------------------------------------------------------------------
 
-variable "private_endpoints" {
-  type = map(object({
+variable "private_endpoint_config" {
+  description = "If configured, creates the required private endpoints for the workspace. Provide the common configuration here."
+  type = object({
     subnet_id                   = string
+    private_dns_zone_ids        = list(string)
     private_dns_zone_group_name = optional(string, "default")
-    private_dns_zone_ids        = optional(list(string), [])
-    subresource_names           = list(string)
-  }))
-  description = "A map of Private Endpoints to create for the Virtual Desktop Workspace. The key is a descriptive name for the endpoint."
-  default     = {}
-
+  })
+  default = null
   validation {
-    condition = alltrue([
-      for pe in values(var.private_endpoints) : can(regex("^/subscriptions/.+/resourceGroups/.+/providers/Microsoft.Network/virtualNetworks/.+/subnets/.+$", pe.subnet_id))
-    ])
-    error_message = "The 'subnet_id' for each private endpoint must be a valid Azure Resource ID for a subnet."
-  }
+  condition     = !var.public_network_access_enabled ? var.private_endpoint_config != null : true
+  error_message = "When public_network_access_enabled is false, a private_endpoint_config must be provided."
+ }
+}
 
-  validation {
-    condition = alltrue([
-      for pe in values(var.private_endpoints) : alltrue([
-        for id in pe.private_dns_zone_ids : can(regex("^/subscriptions/.+/resourceGroups/.+/providers/Microsoft.Network/privateDnsZones/.+$", id))
-      ])
-    ])
-    error_message = "All 'private_dns_zone_ids' for each private endpoint must be valid Azure Resource IDs for Private DNS Zones."
-  }
-
-  validation {
-    condition = alltrue([
-      for pe in values(var.private_endpoints) : length(pe.subresource_names) > 0
-    ])
-    error_message = "The 'subresource_names' list for each private endpoint cannot be empty."
-  }
-
-  validation {
-    condition     = var.public_network_access_enabled || length(var.private_endpoints) > 0
-    error_message = "When public_network_access_enabled is false, at least one private endpoint must be configured."
-  }
+variable "create_global_endpoint" {
+  description = "If true and private_endpoint_config is set, a private endpoint for the 'global' sub-resource will also be created. Set this to false for any secondary workspaces in an environment that already has a global endpoint."
+  type        = bool
+  default     = true
 }
 
 #------------------------------------------------------------------------------

@@ -88,12 +88,9 @@ module "virtual_desktop_workspace" {
     }
   }
 
-  private_endpoints = {
-    main = {
-      subnet_id            = azurerm_subnet.this.id
-      private_dns_zone_ids = [azurerm_private_dns_zone.this.id]
-      subresource_names    = ["workspace"]
-    }
+  private_endpoint_config = {
+    subnet_id            = azurerm_subnet.this.id
+    private_dns_zone_ids = [azurerm_private_dns_zone.this.id]
   }
 
   diagnostics_level = "all"

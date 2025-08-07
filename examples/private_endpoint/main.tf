@@ -37,12 +37,9 @@ module "virtual_desktop_workspace" {
   friendly_name                 = "Private Endpoint Workspace"
   public_network_access_enabled = false
 
-  private_endpoints = {
-    main = {
-      subnet_id            = azurerm_subnet.this.id
-      private_dns_zone_ids = [azurerm_private_dns_zone.this.id]
-      subresource_names    = ["workspace"]
-    }
+  private_endpoint_config = {
+    subnet_id            = azurerm_subnet.this.id
+    private_dns_zone_ids = [azurerm_private_dns_zone.this.id]
   }
 
   tags = {
