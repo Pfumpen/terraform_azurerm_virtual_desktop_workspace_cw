@@ -22,5 +22,9 @@ resource "azurerm_virtual_desktop_workspace" "this" {
   description                   = var.description
   public_network_access_enabled = var.public_network_access_enabled
   tags                          = local.tags
-
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
+  }
 }
