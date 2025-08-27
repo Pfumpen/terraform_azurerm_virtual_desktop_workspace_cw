@@ -5,9 +5,7 @@
 locals {
   # Merge user-provided tags with module-default tags
   tags = merge(
-    {
-      "module" = "terraform-azurerm-virtual-desktop-workspace"
-    },
+    {"deployment"   = "terraform"},
     var.tags
   )
 }
