@@ -1,18 +1,10 @@
-#------------------------------------------------------------------------------
-# Locals
-#------------------------------------------------------------------------------
-
 locals {
-  # Merge user-provided tags with module-default tags
+
   tags = merge(
-    {"deployment"   = "terraform"},
+    { "deployment" = "terraform" },
     var.tags
   )
 }
-
-#------------------------------------------------------------------------------
-# Core Resource: Virtual Desktop Workspace
-#------------------------------------------------------------------------------
 
 resource "azurerm_virtual_desktop_workspace" "this" {
   name                          = var.name

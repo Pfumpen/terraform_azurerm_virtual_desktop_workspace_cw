@@ -1,14 +1,6 @@
-#------------------------------------------------------------------------------
-# Private Endpoint Logic
-#------------------------------------------------------------------------------
-
 locals {
-  # This logic conditionally builds the map of endpoints to create.
-  # It uses the merge function to combine the mandatory 'feed' endpoint
-  # with the optional 'global' endpoint.
   workspace_endpoints_to_create = var.private_endpoint_config == null ? {} : merge(
 
-    # 1. The 'feed' endpoint is ALWAYS created if private_endpoint_config is provided.
     {
       "feed" = {
         subnet_id            = var.private_endpoint_config.subnet_id
@@ -17,7 +9,6 @@ locals {
       }
     },
 
-    # 2. The 'global' endpoint is ONLY merged into the map if var.create_global_endpoint is true.
     var.create_global_endpoint ? {
       "global" = {
         subnet_id            = var.private_endpoint_config.subnet_id
@@ -27,10 +18,6 @@ locals {
     } : {}
   )
 }
-
-#------------------------------------------------------------------------------
-# Private Endpoint Resource
-#------------------------------------------------------------------------------
 
 resource "azurerm_private_endpoint" "this" {
   for_each = local.workspace_endpoints_to_create

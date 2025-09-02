@@ -1,7 +1,3 @@
-#------------------------------------------------------------------------------
-# Resource: Role Assignments
-#------------------------------------------------------------------------------
-
 resource "azurerm_role_assignment" "this" {
   for_each = var.role_assignments
 

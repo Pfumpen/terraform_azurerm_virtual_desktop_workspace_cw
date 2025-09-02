@@ -1,15 +1,8 @@
-#------------------------------------------------------------------------------
-# Output: Virtual Desktop Workspace
-#------------------------------------------------------------------------------
 
 output "id" {
   description = "The resource ID of the Virtual Desktop Workspace."
   value       = azurerm_virtual_desktop_workspace.this.id
 }
-
-#------------------------------------------------------------------------------
-# Output: Private Endpoints
-#------------------------------------------------------------------------------
 
 output "private_endpoints" {
   description = "A map of created Private Endpoint details, including their resource IDs and FQDNs."
@@ -19,10 +12,6 @@ output "private_endpoints" {
   } }
   sensitive = true
 }
-
-#------------------------------------------------------------------------------
-# Output: Role Assignments
-#------------------------------------------------------------------------------
 
 output "role_assignment_ids" {
   description = "A map of created role assignment resource IDs, keyed by the input map key."

@@ -116,9 +116,9 @@ variable "private_endpoint_config" {
   })
   default = null
   validation {
-  condition     = !var.public_network_access_enabled ? var.private_endpoint_config != null : true
-  error_message = "When public_network_access_enabled is false, a private_endpoint_config must be provided."
- }
+    condition     = !var.public_network_access_enabled ? var.private_endpoint_config != null : true
+    error_message = "When public_network_access_enabled is false, a private_endpoint_config must be provided."
+  }
 }
 
 variable "create_global_endpoint" {
